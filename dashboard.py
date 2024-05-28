@@ -15,6 +15,9 @@ from data import setup_datasets
 # Initialize the app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+LABELS_FILE = "labels_above_100.txt"
+MODEL_CHECKPOINT = "./results_final/checkpoint-55000"
+TRAINING_DATA = "training_data.csv"
 
 # Function to load safetensors weights
 def load_safetensors_weights(model, file_path):
@@ -74,22 +77,22 @@ def evaluate_model(model, tokenizer, dataset, num_samples, reverse_label_mapping
 
 # Load the model and tokenizer
 model_name = "distilbert/distilbert-base-german-cased"
-checkpoint_path = "./results_final/checkpoint-55000"
+checkpoint_path = MODEL_CHECKPOINT
 model, tokenizer = load_model_and_tokenizer(model_name, checkpoint_path)
 
 # Load datasets to get label mappings
-_, test_dataset, label_mapping = setup_datasets("training_data.csv", seed=4, split_size=0.8)
+_, test_dataset, label_mapping = setup_datasets(TRAINING_DATA, seed=4, split_size=0.8)
 reverse_label_mapping = {v: k for k, v in label_mapping.items()}
 
 # Load labels from the file
-with open("labels_above_100.txt", "r") as f:
+with open(LABELS_FILE, "r") as f:
     labels = f.read().splitlines()
 
 # Define the layout of the dashboard
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
-            html.H1("Product Label Prediction Dashboard"),
+            html.H1("Produktgruppe Vorhersage Dashboard"),
             html.Label("Trainierte Labels:"),
             dcc.Dropdown(
                 id="label-dropdown",
