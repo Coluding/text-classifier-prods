@@ -11,8 +11,8 @@
 *.pth
 *.txt
 *.json
-
-
+*.bin
+decrypt.py
 
 
 
