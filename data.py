@@ -6,10 +6,13 @@ import torch
 from typing import Tuple
 
 
-def setup_datasets(csv_data: str, minimum_num_instances: int = 80, seed: int = 123, split_size: float = 0.2) -> (
+def setup_datasets(csv_data: str, minimum_num_instances: int = 80, seed: int = 123, split_size: float = 0.2,
+                   delim: str = "{") -> (
         Tuple)[datasets.Dataset, datasets.Dataset, dict]:
-    df = pd.read_csv(csv_data, delimiter="{")
-    df = df.iloc[:, 1:]
+    df = pd.read_csv(csv_data, delimiter=delim)
+
+    if len(df.columns) == 3:
+        df = df.iloc[:, 1:]
     df.columns = ['text', 'label']
 
     # Filter out labels with less than minimum_num_instances
