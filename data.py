@@ -3,11 +3,11 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trai
 from datasets import load_dataset, load_metric, Dataset, ClassLabel
 import pandas as pd
 import torch
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 def setup_datasets(csv_data: str, minimum_num_instances: int = 80, seed: int = 123, split_size: float = 0.2,
-                   delim: str = "{") -> (
+                   delim: str = "{", remove_label: Optional[str] = None) -> (
         Tuple)[datasets.Dataset, datasets.Dataset, dict]:
     df = pd.read_csv(csv_data, delimiter=delim)
 
@@ -18,8 +18,11 @@ def setup_datasets(csv_data: str, minimum_num_instances: int = 80, seed: int = 1
     # Filter out labels with less than minimum_num_instances
     label_counts = df['label'].value_counts()
     labels_to_keep = label_counts[label_counts >= minimum_num_instances].index
+    if remove_label is not None:
+        labels_to_keep = labels_to_keep[labels_to_keep != remove_label]
     df_reduced = df[df['label'].isin(labels_to_keep)]
-    label_mapping = {label: i for i, label in enumerate(df['label'].unique())}
+    #label_mapping = {label: i for i, label in enumerate(df['label'].unique())}
+    label_mapping = {label: i for i, label in enumerate(labels_to_keep)}
     df_reduced['label'] = df_reduced['label'].map(label_mapping)
 
     dataset = Dataset.from_pandas(df_reduced)
@@ -47,6 +50,9 @@ class CustomCollator:
             labels = [item['label'] for item in batch]
         encoding = self.tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
         encoding['labels'] = torch.tensor(labels)
+
+
+
         return encoding
 
 
